@@ -79,7 +79,9 @@ function page() {
       <div className="w-full bg-cyan-200 min-h-[90vh] rounded-t-[2rem] pb-10 pl-2">
         <div className="flex gap-5 px-4 py-3 max-w-screen overflow-auto">
           {status.map((status) => (
-            <p key={status} className="text-sm">{status}</p>
+            <p key={status} className="text-sm">
+              {status}
+            </p>
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 pr-2">
