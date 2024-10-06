@@ -171,6 +171,10 @@ function User() {
       setError("Please enter your name and phone number");
       return;
     }
+    if (phone.length != 10) {
+      setError("Please enter a valid phone number");
+      return;
+    }
     window.location.reload();
   };
 
@@ -250,7 +254,15 @@ function User() {
               <Input
                 placeholder="Phone Number"
                 value={phone}
-                onChange={(e) => setPhone(e.target.value)}
+                onChange={(e) => {
+                  if (
+                    e.target.value.length > 10 ||
+                    isNaN(Number(e.target.value))
+                  ) {
+                    return;
+                  }
+                  setPhone(e.target.value);
+                }}
               />
             </div>
             <div className="flex flex-col ">
