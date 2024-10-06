@@ -11,7 +11,12 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@radix-ui/react-alert-dialog";
-import { ChevronDown, ChevronUp, ShoppingCart, Text } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@radix-ui/react-popover";
+import { ChevronDown, ChevronUp, ShoppingCart, Text, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 const items = [
@@ -96,6 +101,23 @@ const items = [
   },
 ];
 
+// Helper function to round up to the next 30-minute interval
+const roundToNext30Minutes = (date: Date) => {
+  const ms = 1000 * 60 * 30; // 30 minutes in milliseconds
+  return new Date(Math.ceil(date.getTime() / ms) * ms);
+};
+
+// Helper function to format time in HH:MM AM/PM format
+const formatTime = (date: Date) => {
+  let hours = date.getHours();
+  const minutes = date.getMinutes();
+  const ampm = hours >= 12 ? "PM" : "AM";
+  hours = hours % 12;
+  hours = hours ? hours : 12; // the hour '0' should be '12'
+  const minutesStr = minutes < 10 ? "0" + minutes : minutes;
+  return `${hours}:${minutesStr} ${ampm}`;
+};
+
 const status = ["All", "Breakfast", "Lunch", "Treat", "Desert", "Drinks"];
 function User() {
   const [dishes, setDishes] = useState(items);
@@ -107,6 +129,7 @@ function User() {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
+  const [timeOptions, setTimeOptions] = useState<Date[]>([]);
 
   const handleAdd = (id: number) => {
     const newDishes = dishes.map((dish) => {
@@ -131,8 +154,11 @@ function User() {
       }
       return dish;
     });
-
     setDishes(newDishes);
+    if (!newDishes.some((dish) => dish.quantity > 0)) {
+      setShowOrder(false);
+      setCheckout(false);
+    }
   };
 
   const handleCheckout = () => {
@@ -156,13 +182,36 @@ function User() {
     setTotal(newTotal);
   }, [dishes]);
 
+  useEffect(() => {
+    // Get current time and round it up to the next 30-minute interval
+    const currentTime = new Date();
+    const next30MinTime = roundToNext30Minutes(currentTime);
+
+    // Generate time options for the next few hours (e.g., next 5 hours)
+    const options: Date[] = [];
+    for (let i = 0; i < 10; i++) {
+      const newTime = new Date(next30MinTime.getTime() + i * 30 * 60 * 1000);
+      options.push(newTime);
+    }
+
+    setTimeOptions(options);
+  }, []);
+
   return (
     <>
-      <AlertDialog open={checkout} onOpenChange={setCheckout}>
-        <AlertDialogContent className="fixed inset-0 flex flex-col px-2 py-4 items-center justify-center bg-black/50">
-          <AlertDialogHeader className="bg-white py-2 w-full">
-            <AlertDialogTitle className="text-2xl ">
-              Order Details:{" "}
+      <AlertDialog open={checkout}>
+        <AlertDialogContent
+          onClick={(e) => e.stopPropagation()}
+          className="fixed inset-0 flex flex-col px-2 py-4 items-center justify-center bg-black/50"
+        >
+          <AlertDialogHeader className="bg-white py-2 w-full px-2">
+            <AlertDialogTitle className="text-2xl">
+              <div className="flex justify-between">
+                <p>Order Details</p>
+                <button onClick={() => setCheckout(false)}>
+                  <X />
+                </button>
+              </div>
             </AlertDialogTitle>
             <AlertDialogDescription className="max-h-[30vh] overflow-hidden overflow-y-scroll w-full flex flex-col space-y-2">
               {dishes.map((dish) => {
@@ -187,7 +236,7 @@ function User() {
               })}
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="bg-white w-full py-4 px-2">
+          <div className="bg-white w-full py-4 px-2 flex flex-col gap-2">
             <div className="flex flex-col ">
               <label className="font-semibold">Name</label>
               <Input
@@ -204,9 +253,53 @@ function User() {
                 onChange={(e) => setPhone(e.target.value)}
               />
             </div>
+            <div className="flex flex-col ">
+              <label htmlFor="">Time</label>
+              {/* <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="w-[160px] justify-start text-left font-normal"
+                  >
+                    <ClockIcon className="mr-1 h-4 w-4 -translate-x-1" />
+                    <span>Select a time</span>
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-white" align="start">
+                  <div className="grid grid-cols-1 gap-2 p-4 max-h-[40vh] overflow-y-scroll">
+                    {[...Array(48)].map((_, i) => (
+                      <Button
+                        key={i}
+                        variant="ghost"
+                        className="rounded-md px-3 py-1 text-sm font-medium hover:bg-muted/50"
+                      >
+                        {new Date(i * 30 * 60 * 1000).toLocaleTimeString(
+                          "en-US",
+                          {
+                            hour: "numeric",
+                            minute: "numeric",
+                            hour12: true,
+                          }
+                        )}
+                      </Button>
+                    ))}
+                  </div>
+                </PopoverContent>
+              </Popover> */}
+              <div>
+                <label htmlFor="timeSelect">Select a time:</label>
+                <select id="timeSelect">
+                  {timeOptions.map((time, index) => (
+                    <option key={index} value={time.toISOString()}>
+                      {formatTime(time)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
             <hr />
           </div>
-          <AlertDialogFooter className="bg-white py-4 w-full">
+          <AlertDialogFooter className="bg-white pb-3 w-full">
             <Button onClick={handlePlaceOrder}>Confirm and Place Order</Button>
             {error && <p className="text-red-500">{error}</p>}
           </AlertDialogFooter>
@@ -322,7 +415,7 @@ function User() {
           className="sticky w-full py-1 bg-white text-white mt-0 bottom-0"
         >
           {showOrder && (
-            <div className="sticky w-full bg-cyan-200 rounded-t-[2rem] pb-8 pl-2 pt-2 h-[50vh] overflow-y-scroll no-scrollbar">
+            <div className="sticky w-full bg-cyan-200 rounded-t-[2rem] pb-8 pl-2 pt-2 max-h-[40vh] overflow-y-scroll no-scrollbar">
               {dishes.map((dish) => {
                 if (dish.quantity > 0) {
                   return (
@@ -403,3 +496,23 @@ function User() {
 }
 
 export default User;
+
+function ClockIcon(props: any) {
+  return (
+    <svg
+      {...props}
+      xmlns="http://www.w3.org/2000/svg"
+      width="24"
+      height="24"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <circle cx="12" cy="12" r="10" />
+      <polyline points="12 6 12 12 16 14" />
+    </svg>
+  );
+}
