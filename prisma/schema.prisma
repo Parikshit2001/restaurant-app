@@ -12,3 +12,53 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+model Admin {
+  id    Int    @id @default(autoincrement())
+  name  String
+  email String
+}
+
+model Menu {
+  id             Int     @id @default(autoincrement())
+  ownerName      String
+  restaurantName String
+  email          String  @unique
+  dishes         Dish[]
+  Order          Order[]
+}
+
+model Dish {
+  id          Int     @id @default(autoincrement())
+  name        String
+  description String
+  price       Int
+  image       String
+  tags        Tag[]
+  Menu        Menu    @relation(fields: [menuId], references: [id])
+  menuId      Int
+  Order       Order[]
+}
+
+model Order {
+  id            Int      @id @default(autoincrement())
+  customerName  String
+  customerPhone String?
+  numberOfSeats Int
+  createdAt     DateTime @default(now())
+  forTime       DateTime
+  totalBill     Int
+  pending       Boolean  @default(true)
+  dishes        Dish[]
+  quantity      Int[]
+  Menu          Menu     @relation(fields: [menuId], references: [id])
+  menuId        Int
+}
+
+enum Tag {
+  Breakfast
+  Lunch
+  Dinner
+  Desert
+  Drinks
+}
