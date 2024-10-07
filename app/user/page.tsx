@@ -11,11 +11,6 @@ import {
   AlertDialogDescription,
   AlertDialogTitle,
 } from "@radix-ui/react-alert-dialog";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@radix-ui/react-popover";
 import { ChevronDown, ChevronUp, ShoppingCart, Text, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
@@ -127,7 +122,7 @@ function User() {
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [checkout, setCheckout] = useState(false);
   const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  // const [phone, setPhone] = useState("");
   const [error, setError] = useState("");
   const [timeOptions, setTimeOptions] = useState<Date[]>([]);
 
@@ -167,14 +162,15 @@ function User() {
   };
 
   const handlePlaceOrder = () => {
-    if (!name || !phone) {
+    // if (!name || !phone) {
+    if (!name) {
       setError("Please enter your name and phone number");
       return;
     }
-    if (phone.length != 10) {
-      setError("Please enter a valid phone number");
-      return;
-    }
+    // if (phone.length != 10) {
+    //   setError("Please enter a valid phone number");
+    //   return;
+    // }
     window.location.reload();
   };
 
@@ -249,7 +245,7 @@ function User() {
                 onChange={(e) => setName(e.target.value)}
               />
             </div>
-            <div className="flex flex-col ">
+            {/* <div className="flex flex-col ">
               <label htmlFor="">Phone Nnumber</label>
               <Input
                 placeholder="Phone Number"
@@ -264,7 +260,7 @@ function User() {
                   setPhone(e.target.value);
                 }}
               />
-            </div>
+            </div> */}
             <div className="flex flex-col ">
               <label htmlFor="">Time</label>
               {/* <Popover>
@@ -473,7 +469,11 @@ function User() {
             </div>
           )}
           {total > 0 && (
-            <div className="bg-red-500 mx-2 py-2 rounded px-2 flex justify-between items-center">
+            <div
+              className={`bg-red-500 mx-2 py-2 rounded px-2 flex justify-between items-center ${
+                showOrder ? "mt-2" : ""
+              }`}
+            >
               <div className="flex gap-2">
                 <button
                   className="bg-white text-red-500 font-bold py-1 px-2 rounded"
@@ -509,22 +509,22 @@ function User() {
 
 export default User;
 
-function ClockIcon(props: any) {
-  return (
-    <svg
-      {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-    >
-      <circle cx="12" cy="12" r="10" />
-      <polyline points="12 6 12 12 16 14" />
-    </svg>
-  );
-}
+// function ClockIcon(props: any) {
+//   return (
+//     <svg
+//       {...props}
+//       xmlns="http://www.w3.org/2000/svg"
+//       width="24"
+//       height="24"
+//       viewBox="0 0 24 24"
+//       fill="none"
+//       stroke="currentColor"
+//       strokeWidth="2"
+//       strokeLinecap="round"
+//       strokeLinejoin="round"
+//     >
+//       <circle cx="12" cy="12" r="10" />
+//       <polyline points="12 6 12 12 16 14" />
+//     </svg>
+//   );
+// }
