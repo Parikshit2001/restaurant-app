@@ -263,37 +263,6 @@ function User() {
             </div> */}
             <div className="flex flex-col ">
               <label htmlFor="">Time</label>
-              {/* <Popover>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="w-[160px] justify-start text-left font-normal"
-                  >
-                    <ClockIcon className="mr-1 h-4 w-4 -translate-x-1" />
-                    <span>Select a time</span>
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-white" align="start">
-                  <div className="grid grid-cols-1 gap-2 p-4 max-h-[40vh] overflow-y-scroll">
-                    {[...Array(48)].map((_, i) => (
-                      <Button
-                        key={i}
-                        variant="ghost"
-                        className="rounded-md px-3 py-1 text-sm font-medium hover:bg-muted/50"
-                      >
-                        {new Date(i * 30 * 60 * 1000).toLocaleTimeString(
-                          "en-US",
-                          {
-                            hour: "numeric",
-                            minute: "numeric",
-                            hour12: true,
-                          }
-                        )}
-                      </Button>
-                    ))}
-                  </div>
-                </PopoverContent>
-              </Popover> */}
               <div>
                 <label htmlFor="timeSelect">Select a time:</label>
                 <select id="timeSelect">
@@ -368,27 +337,29 @@ function User() {
               .map((dish) => (
                 <div
                   key={dish.name}
-                  className="rounded-lg overflow-hidden col-span-1 bg-white"
+                  className="rounded-lg overflow-hidden col-span-1 bg-white flex flex-col justify-between"
                 >
-                  <img
-                    className="w-full h-32 object-cover"
-                    src={dish.image}
-                    alt=""
-                  />
-                  <div className="py-1 px-2">
-                    <p className="font-semibold">{dish.name}</p>
-                    <p>
-                      {dish.description.length > 20
-                        ? dish.description.slice(0, 20) + "..."
-                        : dish.description}
-                    </p>
-                    <div className="flex justify-between items-center">
-                      <p className="font-extrabold">{dish.price}</p>
-                      {dish.quantity > 0 && (
-                        <p className="font-bold shadow-lg bg-red-500 text-white rounded-sm px-1">
-                          Qty: {dish.quantity}
-                        </p>
-                      )}
+                  <div>
+                    <img
+                      className="w-full h-32 object-cover"
+                      src={dish.image}
+                      alt=""
+                    />
+                    <div className="py-1 px-2">
+                      <p className="font-semibold">{dish.name}</p>
+                      <p>
+                        {dish.description.length > 20
+                          ? dish.description.slice(0, 20) + "..."
+                          : dish.description}
+                      </p>
+                      <div className="flex justify-between items-center">
+                        <p className="font-extrabold">{dish.price}</p>
+                        {dish.quantity > 0 && (
+                          <p className="font-bold shadow-lg bg-red-500 text-white rounded-sm px-1">
+                            Qty: {dish.quantity}
+                          </p>
+                        )}
+                      </div>
                     </div>
                   </div>
                   <div
