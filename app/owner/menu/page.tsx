@@ -2,6 +2,8 @@
 import { ChevronLeft, Text } from "lucide-react";
 import { useState } from "react";
 import Link from "next/link";
+import { dishType } from "@/app/lib/types";
+import FoodCard from "@/components/FoodCard";
 
 const items = [
   {
@@ -85,22 +87,12 @@ const items = [
   },
 ];
 
-interface itemType {
-  id: number;
-  name: string;
-  description: string;
-  price: number;
-  image: string;
-  quantity: number;
-  tags: string[];
-}
-
 const status = ["All", "Breakfast", "Lunch", "Treat", "Desert", "Drinks"];
 function Menu() {
   const [dishes, setDishes] = useState(items);
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
-  const [updateDish, setUpdateDish] = useState<itemType>();
+  const [updateDish, setUpdateDish] = useState<dishType>();
   // const [newDish, setNewDish] = useState({});
 
   const handleEdit = (id: number) => {
@@ -198,26 +190,16 @@ function Menu() {
                 className={`rounded-lg overflow-hidden col-span-1 bg-white`}
               >
                 {updateDish?.id !== dish.id ? (
-                  <div className="h-full">
-                    <img
-                      className="w-full h-32 object-cover"
-                      src={dish.image}
-                      alt=""
-                    />
-                    <div className="py-1 px-2">
-                      <p className="font-semibold">{dish.name}</p>
-                      <p>
-                        {dish.description.length > 20
-                          ? dish.description.slice(0, 20) + "..."
-                          : dish.description}
-                      </p>
+                  <div className="h-full flex flex-col justify-between">
+                    <FoodCard dish={dish} />
+                    <div className="flex text-lg bg-cyan-900">
+                      <button
+                        onClick={() => handleEdit(dish.id)}
+                        className="w-full text-green-500 font-extrabold border-t-2 shadow-xl py-0.5"
+                      >
+                        EDIT
+                      </button>
                     </div>
-                    <button
-                      onClick={() => handleEdit(dish.id)}
-                      className="w-full h-full flex flex-col items-center text-green-500 font-extrabold border-t-2 shadow-xl py-0.5 bg-cyan-900"
-                    >
-                      EDIT
-                    </button>
                   </div>
                 ) : (
                   <>
@@ -235,11 +217,6 @@ function Menu() {
                         }
                         className="font-semibold bg-white border"
                       />
-                      {/* <p>
-                        {updateDish.description.length > 20
-                          ? dish.description.slice(0, 20) + "..."
-                          : dish.description}
-                      </p> */}
                       <textarea
                         value={updateDish.description}
                         onChange={(e) =>
