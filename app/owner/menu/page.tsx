@@ -4,6 +4,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { dishType } from "@/app/lib/types";
 import FoodCard from "@/components/FoodCard";
+import { signIn, signOut, useSession } from "next-auth/react";
+import { Button } from "@/components/ui/button";
 
 const items = [
   {
@@ -128,11 +130,21 @@ function Menu() {
   const handleCancel = () => {
     setUpdateDish(undefined);
   };
+  const session = useSession();
+  console.log(session);
+
+  if (!session.data) {
+    return (
+      <div className="w-screen h-screen flex justify-center items-center">
+        <Button onClick={() => signIn("google")}>Login with Google</Button>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white min-h-screen">
       <div className="mx-2">
-        <div className="w-min mt-2">
+        <div className="w-full mt-2 flex justify-between">
           <Link
             href={"/owner"}
             className="flex text-lg items-center bg-red-500 text-white rounded pr-3"
@@ -140,6 +152,13 @@ function Menu() {
             <ChevronLeft />
             Back
           </Link>
+          <Button
+            onClick={() => {
+              signOut();
+            }}
+          >
+            Logout
+          </Button>
         </div>
         <div className="flex items-center pr-2">
           <Text />
