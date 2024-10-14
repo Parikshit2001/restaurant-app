@@ -50,7 +50,8 @@ function ConfirmAlertDialogBox({
   const handlePlaceOrder = () => {
     // if (!name || !phone) {
     if (!name) {
-      setError("Please enter your name and phone number");
+      // setError("Please enter your name and phone number");
+      setError("Please enter your name");
       return;
     }
     // if (phone.length != 10) {

@@ -31,7 +31,7 @@ function Checkout({
       className="sticky w-full py-1 bg-white text-white mt-0 bottom-0"
     >
       {showOrder && (
-        <div className="sticky w-full bg-cyan-200 rounded-t-[2rem] pb-8 pl-2 pt-2 max-h-[40vh] overflow-y-scroll no-scrollbar">
+        <div className="sticky w-full bg-gray-800 rounded-t-[2rem] pb-8 pl-2 pt-2 max-h-[40vh] overflow-y-scroll no-scrollbar">
           {dishes.map((dish) => {
             if (dish.quantity > 0) {
               return (
@@ -89,7 +89,7 @@ function Checkout({
             >
               {showOrder ? <ChevronDown /> : <ChevronUp />}
             </button>
-            <p className="bg-white text-red-500 font-bold py-1 px-2 rounded">
+            <p className="text-black font-bold py-1 px-2 rounded">
               Total: <span className="font-extrabold text-xl">{total}</span>
             </p>
           </div>
