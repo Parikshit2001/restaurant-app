@@ -1,137 +1,143 @@
 "use client";
 import { ChevronLeft, Text } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { dishType } from "@/app/lib/types";
 import FoodCard from "@/components/FoodCard";
 import { signIn, signOut, useSession } from "next-auth/react";
 import { Button } from "@/components/ui/button";
-
-const items = [
-  {
-    id: 1,
-    name: "Hamburger",
-    description: "Hamburger with cheese",
-    price: 50,
-    image:
-      "https://img.freepik.com/premium-photo/extreme-closeup-tasty-hanburger-food-photography_779330-6030.jpg?w=2000",
-    quantity: 0,
-    tags: ["Lunch", "Treat"],
-  },
-  {
-    id: 2,
-    name: "Pizza",
-    description: "Pizza with cheese and toppings",
-    price: 100,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/9/91/Pizza-3007395.jpg",
-    quantity: 0,
-    tags: ["Lunch", "Treat"],
-  },
-  {
-    id: 3,
-    name: "Salad",
-    description: "Salad with cheese and toppings",
-    price: 80,
-    image: "https://cdn.loveandlemons.com/wp-content/uploads/2019/07/salad.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch"],
-  },
-  {
-    id: 31,
-    name: "Pasta",
-    description: "Pasta with cheese and toppings",
-    price: 120,
-    image:
-      "https://www.yummytummyaarthi.com/wp-content/uploads/2022/11/red-sauce-pasta-1.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 4,
-    name: "fries",
-    description: "fries with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.awesomecuisine.com/wp-content/uploads/2009/05/french-fries.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 5,
-    name: "Gobi Manchurian",
-    description: "Drinks with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.hookedonheat.com/wp-content/uploads/2006/03/Gobi-Manchurian-HOHV.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 6,
-    name: "Masala Dosa",
-    description: "Sides with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.cookwithmanali.com/wp-content/uploads/2020/05/Masala-Dosa-1014x1536.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 7,
-    name: "Sides",
-    description: "Sides with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.awesomecuisine.com/wp-content/uploads/2009/05/french-fries.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-];
+import axios from "axios";
+import { URL } from "@/app/lib/constants";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 
 const status = ["All", "Breakfast", "Lunch", "Treat", "Desert", "Drinks"];
 function Menu() {
-  const [dishes, setDishes] = useState(items);
+  const [dishes, setDishes] = useState<dishType[] | undefined>();
   const [search, setSearch] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("All");
   const [updateDish, setUpdateDish] = useState<dishType>();
-  // const [newDish, setNewDish] = useState({});
+  const [newDish, setNewDish] = useState({
+    name: "",
+    description: "",
+    image: "",
+    price: 0,
+  });
+  const [adding, setAdding] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    axios.get(`${URL}/api/owner/getmenu`).then((res) => {
+      const newDishes = res.data.dishes;
+      newDishes.map((dish: dishType) => {
+        dish.quantity = 0;
+        return dish;
+      });
+      setDishes(res.data.dishes);
+    });
+  }, []);
 
   const handleEdit = (id: number) => {
-    // if (Object.keys(updateDish).length > 0) return;
-    const dish = dishes.find((dish) => dish.id === id);
+    const dish = dishes?.find((dish) => dish.id === id);
     if (!dish) return;
     setUpdateDish(dish);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     if (!updateDish) return;
-    const newDishes = dishes.map((dish) => {
-      if (dish.id === updateDish.id) {
-        return updateDish;
-      }
-      return dish;
-    });
-    setDishes(newDishes);
-    setUpdateDish(undefined);
+    setLoading(true);
+    axios
+      .put(`${URL}/api/owner/updatedish`, updateDish)
+      .then((res) => {
+        console.log(res.data);
+        const newDishes = dishes?.map((dish) => {
+          if (dish.id === updateDish.id) {
+            return updateDish;
+          }
+          return dish;
+        });
+        setDishes(newDishes);
+      })
+      .catch((err) => {
+        alert("Update unsuccessful");
+        console.log(err);
+      })
+      .finally(() => {
+        setUpdateDish(undefined);
+        setLoading(false);
+      });
   };
 
   const handleRemove = () => {
     if (!updateDish) return;
-    const newDishes = dishes.filter((dish) => dish.id !== updateDish.id);
-    setDishes(newDishes);
+    axios
+      .post(`${URL}/api/owner/removedish`, {
+        id: updateDish.id,
+      })
+      .then(() => {
+        const newDishes = dishes?.filter((dish) => dish.id !== updateDish.id);
+        setDishes(newDishes);
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Dish not removed");
+      })
+      .finally(() => {
+        setUpdateDish(undefined);
+      });
+  };
+
+  const handlePlus = () => {
+    setAdding(true);
+  };
+
+  const handleAdd = () => {
+    if (newDish.name === "" || newDish.description === "") return;
+    setLoading(true);
+    axios
+      .post(`${URL}/api/owner/adddish`, newDish)
+      .then((res) => {
+        const newDishes = dishes;
+        newDishes?.push(res.data.dish);
+        setDishes(newDishes);
+        setAdding(false);
+        setNewDish({
+          name: "",
+          description: "",
+          price: 0,
+          image: "",
+        });
+      })
+      .catch((err) => {
+        console.error(err);
+        alert("Dish not added");
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  };
+
+  const handleCancelUpdate = () => {
     setUpdateDish(undefined);
   };
 
-  // const handlePlus = () => {};
-
-  // const handleAdd = () => {};
-
-  const handleCancel = () => {
-    setUpdateDish(undefined);
+  const handleCancelAdd = () => {
+    setAdding(false);
+    setNewDish({
+      name: "",
+      description: "",
+      price: 0,
+      image: "",
+    });
+    setNewDish({
+      name: "",
+      description: "",
+      price: 0,
+      image: "",
+    });
   };
+
   const session = useSession();
-  console.log(session);
 
   if (!session.data) {
     return (
@@ -195,106 +201,183 @@ function Menu() {
           ))}
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-2 pr-2">
-          {dishes
-            .filter((dish) =>
-              dish.name.toLowerCase().includes(search.toLowerCase())
-            )
-            .filter(
-              (dish) =>
-                selectedStatus === "All" || dish.tags.includes(selectedStatus)
-            )
-            .map((dish) => (
-              <div
-                key={dish.id}
-                className={`rounded-lg overflow-hidden col-span-1 bg-white`}
-              >
-                {updateDish?.id !== dish.id ? (
-                  <div className="h-full flex flex-col justify-between">
-                    <FoodCard dish={dish} />
-                    <div className="flex text-lg bg-cyan-900">
-                      <button
-                        onClick={() => handleEdit(dish.id)}
-                        className="w-full text-green-500 font-extrabold border-t-2 shadow-xl py-0.5"
-                      >
-                        EDIT
-                      </button>
+          {!dishes && <div>Loading...</div>}
+          {dishes &&
+            dishes
+              .filter((dish) =>
+                dish.name.toLowerCase().includes(search.toLowerCase())
+              )
+              .filter(
+                (dish) =>
+                  selectedStatus === "All" || dish.tags.includes(selectedStatus)
+              )
+              .map((dish) => (
+                <div
+                  key={dish.id}
+                  className={`rounded-lg overflow-hidden col-span-1 bg-white`}
+                >
+                  {updateDish?.id !== dish.id ? (
+                    <div className="h-full flex flex-col justify-between">
+                      <FoodCard dish={dish} />
+                      <div className="flex text-lg bg-cyan-900">
+                        <button
+                          onClick={() => handleEdit(dish.id)}
+                          className="w-full text-green-500 font-extrabold border-t-2 shadow-xl py-0.5"
+                        >
+                          EDIT
+                        </button>
+                      </div>
                     </div>
-                  </div>
-                ) : (
-                  <>
-                    <img
-                      className="w-full h-32 object-cover"
-                      src={dish.image}
-                      alt=""
-                    />
-                    <div className="py-1 px-2">
-                      <input
-                        type="text"
-                        value={updateDish.name}
-                        onChange={(e) =>
-                          setUpdateDish({ ...updateDish, name: e.target.value })
-                        }
-                        className="font-semibold bg-white border"
-                      />
-                      <textarea
-                        value={updateDish.description}
-                        onChange={(e) =>
-                          setUpdateDish({
-                            ...updateDish,
-                            description: e.target.value,
-                          })
-                        }
-                        className="text-wrap border mt-1"
-                      />
-                      <div className="flex justify-between items-center">
-                        <input
-                          type="number"
-                          value={updateDish.price}
+                  ) : (
+                    <>
+                      <div>
+                        <img
+                          className="w-full h-32 object-cover"
+                          src={dish.image}
+                          alt=""
+                        />
+                      </div>
+                      <div className="py-1 px-2 flex flex-col space-y-1">
+                        <Input
+                          type="text"
+                          value={updateDish.name}
+                          disabled={loading}
                           onChange={(e) =>
                             setUpdateDish({
                               ...updateDish,
-                              price: Number(e.target.value),
+                              name: e.target.value,
                             })
                           }
-                          className="font-extrabold border"
+                          className="font-semibold bg-white border"
                         />
+                        <div>
+                          <Textarea
+                            value={updateDish.description}
+                            disabled={loading}
+                            onChange={(e) =>
+                              setUpdateDish({
+                                ...updateDish,
+                                description: e.target.value,
+                              })
+                            }
+                            className="text-wrap border"
+                          />
+                        </div>
+                        <div className="flex justify-between items-center">
+                          <Input
+                            type="number"
+                            value={updateDish.price}
+                            disabled={loading}
+                            onChange={(e) =>
+                              setUpdateDish({
+                                ...updateDish,
+                                price: Number(e.target.value),
+                              })
+                            }
+                            className="font-extrabold border"
+                          />
+                        </div>
                       </div>
-                    </div>
-                    <div
-                      onClick={(e) => {
-                        e.stopPropagation();
-                      }}
-                      className="flex text-lg bg-cyan-900"
-                    >
-                      <button
-                        onClick={handleCancel}
-                        className="w-full text-red-500 font-extrabold border-t-2 shadow-xl py-0.5"
+                      <div
+                        onClick={(e) => {
+                          e.stopPropagation();
+                        }}
+                        className="flex text-lg bg-cyan-900"
                       >
-                        CANCEL
-                      </button>
-                      <button
-                        onClick={handleSave}
-                        className="w-full text-green-500 font-extrabold border-t-2 shadow-xl py-0.5 border-l-2"
-                      >
-                        SAVE
-                      </button>
-                    </div>
-                    <div>
-                      <button
-                        onClick={handleRemove}
-                        className="bg-red-500 text-white w-full font-semibold"
-                      >
-                        REMOVE
-                      </button>
-                    </div>
-                  </>
-                )}
-              </div>
-            ))}
+                        <button
+                          onClick={handleCancelUpdate}
+                          className="w-full text-red-500 font-extrabold border-t-2 shadow-xl py-0.5"
+                        >
+                          CANCEL
+                        </button>
+                        <button
+                          onClick={handleSave}
+                          className="w-full text-green-500 font-extrabold border-t-2 shadow-xl py-0.5 border-l-2"
+                        >
+                          SAVE
+                        </button>
+                      </div>
+                      <div>
+                        <button
+                          onClick={handleRemove}
+                          className="bg-red-500 text-white w-full font-semibold"
+                        >
+                          REMOVE
+                        </button>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))}
           <div className="col-span-1 bg-white rounded-lg overflow-hidden flex flex-col items-center justify-center min-h-[30vh]">
-            <button className="text-7xl font-semibold shadow-lg border rounded-full w-20 h-20">
-              +
-            </button>
+            {!adding ? (
+              <button
+                onClick={handlePlus}
+                className="text-7xl font-semibold shadow-lg border rounded-full w-20 h-20"
+              >
+                +
+              </button>
+            ) : (
+              <div className="flex flex-col gap-2 py-2">
+                <div>
+                  <label htmlFor="name">Name</label>
+                  <Input
+                    type="text"
+                    id="name"
+                    value={newDish.name}
+                    onChange={(e) => {
+                      setNewDish({
+                        ...newDish,
+                        name: e.target.value,
+                      });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="description">Description</label>
+                  <Textarea
+                    id="description"
+                    value={newDish.description}
+                    onChange={(e) => {
+                      setNewDish({
+                        ...newDish,
+                        description: e.target.value,
+                      });
+                    }}
+                  />
+                </div>
+                <div>
+                  <label htmlFor="price">Price</label>
+                  <Input
+                    type="text"
+                    id="price"
+                    value={newDish.price}
+                    onChange={(e) => {
+                      setNewDish({
+                        ...newDish,
+                        price: Number(e.target.value),
+                      });
+                    }}
+                  />
+                </div>
+                <div className="w-full">
+                  <Button
+                    onClick={handleAdd}
+                    className="w-full font-semibold text-lg"
+                  >
+                    Add
+                  </Button>
+                </div>
+                <div className="w-full">
+                  <Button
+                    onClick={handleCancelAdd}
+                    className="w-full font-semibold text-lg"
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

@@ -5,88 +5,8 @@ import FoodCard from "@/components/FoodCard";
 import { Check, Text } from "lucide-react";
 import { useEffect, useState } from "react";
 import { dishType } from "../lib/types";
-
-const items: dishType[] = [
-  {
-    id: 1,
-    name: "Hamburger",
-    description: "Hamburger with cheese",
-    price: 50,
-    image:
-      "https://img.freepik.com/premium-photo/extreme-closeup-tasty-hanburger-food-photography_779330-6030.jpg?w=2000",
-    quantity: 0,
-    tags: ["Lunch", "Treat"],
-  },
-  {
-    id: 2,
-    name: "Pizza",
-    description: "Pizza with cheese and toppings",
-    price: 100,
-    image:
-      "https://upload.wikimedia.org/wikipedia/commons/9/91/Pizza-3007395.jpg",
-    quantity: 0,
-    tags: ["Lunch", "Treat"],
-  },
-  {
-    id: 3,
-    name: "Salad",
-    description: "Salad with cheese and toppings",
-    price: 80,
-    image: "https://cdn.loveandlemons.com/wp-content/uploads/2019/07/salad.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch"],
-  },
-  {
-    id: 31,
-    name: "Pasta",
-    description: "Pasta with cheese and toppings",
-    price: 120,
-    image:
-      "https://www.yummytummyaarthi.com/wp-content/uploads/2022/11/red-sauce-pasta-1.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 4,
-    name: "fries",
-    description: "fries with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.awesomecuisine.com/wp-content/uploads/2009/05/french-fries.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 5,
-    name: "Gobi Manchurian",
-    description: "Drinks with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.hookedonheat.com/wp-content/uploads/2006/03/Gobi-Manchurian-HOHV.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 6,
-    name: "Masala Dosa",
-    description: "Sides with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.cookwithmanali.com/wp-content/uploads/2020/05/Masala-Dosa-1014x1536.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-  {
-    id: 7,
-    name: "Sides",
-    description: "Sides with cheese and toppings",
-    price: 20,
-    image:
-      "https://www.awesomecuisine.com/wp-content/uploads/2009/05/french-fries.jpg",
-    quantity: 0,
-    tags: ["Breakfast", "Lunch", "Treat"],
-  },
-];
+import axios from "axios";
+import { URL } from "../lib/constants";
 
 const recent = [
   { name: "Khushi", total: 250 },
@@ -95,7 +15,7 @@ const recent = [
 
 const status = ["All", "Breakfast", "Lunch", "Treat", "Desert", "Drinks"];
 function User() {
-  const [dishes, setDishes] = useState(items);
+  const [dishes, setDishes] = useState<dishType[]>([]);
   const [total, setTotal] = useState(100);
   const [showOrder, setShowOrder] = useState(false);
   const [search, setSearch] = useState("");
@@ -131,15 +51,26 @@ function User() {
       return dish;
     });
     setDishes(newDishes);
-    if (!newDishes.some((dish) => dish.quantity > 0)) {
+    if (!newDishes?.some((dish) => dish.quantity > 0)) {
       setShowOrder(false);
       setCheckout(false);
     }
   };
 
   useEffect(() => {
+    axios.get(`${URL}/api/owner/getmenu`).then((res) => {
+      const newDishes = res.data.dishes;
+      newDishes.map((dish: dishType) => {
+        dish.quantity = 0;
+        return dish;
+      });
+      setDishes(res.data.dishes);
+    });
+  }, []);
+
+  useEffect(() => {
     let newTotal = 0;
-    dishes.forEach((dish) => {
+    dishes?.forEach((dish) => {
       newTotal += dish.price * dish.quantity;
     });
     setTotal(newTotal);
